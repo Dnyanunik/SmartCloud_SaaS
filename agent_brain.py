@@ -5,14 +5,13 @@ from langchain_groq import ChatGroq
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from langgraph.graph import StateGraph, END
 
-
+# --- CONFIG ---
 MY_GROQ_KEY = os.getenv("GROQ_API_KEY")
-
 
 class AgentState(TypedDict):
     messages: Annotated[List[BaseMessage], operator.add]
     next_agent: str
-    client_data: dict  # Holds the CPU/RAM data from the API
+    client_data: dict 
 
 llm = ChatGroq(model="llama-3.3-70b-versatile", groq_api_key=MY_GROQ_KEY, temperature=0.1)
 
@@ -21,11 +20,9 @@ def supervisor_router(state: AgentState):
     messages = state['messages']
     if isinstance(messages[-1], AIMessage):
         return {"next_agent": "FINISH"}
-
-    prompt = "Route to MONITORING_AGENT for system/hardware stats, or TASK_AGENT for general chat. Reply ONLY with the name."
+    prompt = "Route to MONITORING_AGENT for hardware stats, or TASK_AGENT for chat. Reply ONLY with the name."
     response = llm.invoke(prompt)
     decision = response.content.upper()
-    
     if "MONITORING" in decision: return {"next_agent": "MONITORING_AGENT"}
     if "TASK" in decision: return {"next_agent": "TASK_AGENT"}
     return {"next_agent": "FINISH"}
@@ -34,9 +31,8 @@ def monitoring_agent(state: AgentState):
     stats = state.get("client_data", {})
     cpu = stats.get("cpu", 0)
     ram = stats.get("ram", 0)
-    
     status = "Healthy" if cpu < 80 else "Critical"
-    report = f"System Status: {status}. Remote Metrics -> CPU: {cpu}%, RAM: {ram}%."
+    report = f"System Status: {status}. Metrics -> CPU: {cpu}%, RAM: {ram}%."
     return {"messages": [AIMessage(content=report)]}
 
 def task_agent(state: AgentState):
@@ -55,4 +51,5 @@ builder.add_conditional_edges("supervisor", lambda x: x["next_agent"],
 builder.add_edge("monitoring_agent", "supervisor")
 builder.add_edge("task_agent", "supervisor")
 
-workflow = builder.compile() # Checkpointer is added in main.py
+# IMPORTANT: We export the builder, not the compiled workflow
+workflow_builder = builder
