@@ -51,5 +51,5 @@ builder.add_conditional_edges("supervisor", lambda x: x["next_agent"],
 builder.add_edge("monitoring_agent", "supervisor")
 builder.add_edge("task_agent", "supervisor")
 
-# IMPORTANT: We export the builder, not the compiled workflow
+# This is the variable name main.py expects
 workflow_builder = builder
