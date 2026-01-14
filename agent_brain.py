@@ -5,11 +5,11 @@ from langchain_groq import ChatGroq
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from langgraph.graph import StateGraph, END
 
-from dotenv import load_dotenv
 
-load_dotenv()
-# --- CONFIG ---
 MY_GROQ_KEY = os.getenv("GROQ_API_KEY")
+
+if not MY_GROQ_KEY:
+    print("CRITICAL ERROR: GROQ_API_KEY not found in environment variables!")
 
 class AgentState(TypedDict):
     messages: Annotated[List[BaseMessage], operator.add]
