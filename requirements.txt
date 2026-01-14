@@ -2,5 +2,6 @@ fastapi
 uvicorn
 langchain-groq
 langgraph
+langgraph-checkpoint-sqlite
 langchain-core
 requests
