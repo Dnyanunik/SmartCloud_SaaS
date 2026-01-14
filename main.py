@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from agent_brain import workflow_builder  # Import the builder
+from agent_brain import workflow_builder 
 from langgraph.checkpoint.sqlite import SqliteSaver 
 from langchain_core.messages import HumanMessage
 import sqlite3
@@ -26,15 +26,11 @@ class ChatRequest(BaseModel):
 @app.post("/chat")
 async def chat_with_agent(req: ChatRequest):
     config = {"configurable": {"thread_id": req.company_id}}
-    
-    # Database connection
     conn = sqlite3.connect("saas_storage.db", check_same_thread=False)
     
     try:
-        # Initialize saver
         saver = SqliteSaver(conn)
-        
-        # Compile the raw builder with the checkpointer here
+        # We compile it here with the memory saver
         agent = workflow_builder.compile(checkpointer=saver)
         
         inputs = {
@@ -50,7 +46,6 @@ async def chat_with_agent(req: ChatRequest):
             "response": result["messages"][-1].content
         }
     except Exception as e:
-        print(f"Error: {e}")
         return {"status": "error", "message": str(e)}
     finally:
         conn.close()
