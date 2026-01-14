@@ -8,8 +8,6 @@ from langgraph.graph import StateGraph, END
 
 MY_GROQ_KEY = os.getenv("GROQ_API_KEY")
 
-if not MY_GROQ_KEY:
-    print("CRITICAL ERROR: GROQ_API_KEY not found in environment variables!")
 
 class AgentState(TypedDict):
     messages: Annotated[List[BaseMessage], operator.add]
