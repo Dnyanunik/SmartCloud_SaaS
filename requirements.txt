@@ -4,4 +4,3 @@ langchain-groq
 langgraph
 langchain-core
 requests
-sqlite3
